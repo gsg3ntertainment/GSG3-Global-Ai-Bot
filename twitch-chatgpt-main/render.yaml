@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: twitch-chatgpt-bot
+    runtime: node
+    branch: main
+    plan: free
+    buildCommand: npm install && npm install ws
+    startCommand: npm start
+    envVars:
+      - key: OPENAI_API_KEY
+        value: process.env.OPENAI_API_KEY
+      - key: CHANNELS
+        value: "tazcidity"
+      - key: GPT_MODE
+        value: "CHAT"
+      - key: HISTORY_LENGTH
+        value: "7"
+      - key: MODEL_NAME
+        value: "gpt-3.5-turbo"
+      - key: COMMAND_NAME
+        value: "tazcidbot"
+      - key: TWITCH_USER  # https://dev.twitch.tv/console
+        value: "tazcidbot"
+      - key: TWITCH_AUTH  # https://twitchapps.com/tmi/
+        value: process.env.TWITCH_AUTH
+      - key: SEND_USERNAME
+        value: "true"
+      - key: ENABLE_TTS
+        value: "true"
+      - key: ENABLE_CHANNEL_POINTS
+        value: "true"
