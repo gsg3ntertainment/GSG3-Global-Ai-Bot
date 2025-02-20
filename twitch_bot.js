@@ -1,7 +1,7 @@
 import tmi from 'tmi.js';
 import OpenAI from 'openai';
 import mysql from 'mysql2/promise';
-const dotenv = require('dotenv');
+const dotenv = import('dotenv');
 
 // Load environment variables
 dotenv.config();
