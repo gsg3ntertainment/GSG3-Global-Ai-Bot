@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 // Load environment variables
 dotenv.config();
 
-class TwitchBot {
+export default class TwitchBot  {
     constructor(username, password, channels, openai_api_key, enable_tts) {
         this.client = new tmi.Client({
             options: { debug: true },
