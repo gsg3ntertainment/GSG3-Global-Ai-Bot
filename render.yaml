@@ -18,9 +18,9 @@ services:
       - key: MODEL_NAME
         value: "gpt-3.5-turbo"
       - key: COMMAND_NAME
-        value: "tazcidbot"
+        value: "#"
       - key: TWITCH_USER  # https://dev.twitch.tv/console
-        value: "tazcidbot"
+        value: "RichardWaffles"
       - key: TWITCH_AUTH  # https://twitchapps.com/tmi/
         value: process.env.TWITCH_AUTH
       - key: SEND_USERNAME
