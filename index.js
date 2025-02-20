@@ -1,14 +1,13 @@
 import express from 'express';
 import fs from 'fs';
 import ws from 'ws';
-
+import bot from './src/discord_bot.js'
 import expressWs from 'express-ws';
 
 import {job} from './keep_alive.js';
 
 import {OpenAIOperations} from './openai_operations.js';
 import {TwitchBot} from './twitch_bot.js';
-import bot from './discord_bot.js';
 
 // start keep alive cron job
 job.start();
@@ -47,7 +46,7 @@ if (!MODEL_NAME) {
     MODEL_NAME = "gpt-3.5-turbo"
 }
 if (!TWITCH_USER) {
-    TWITCH_USER = process.env.TWITCH_USER
+    TWITCH_USER = "Tazcidbot"
     console.log("No TWITCH_USER found. Using nimhzaT as default.")
 }
 if (!TWITCH_AUTH) {
@@ -57,14 +56,14 @@ if (!TWITCH_AUTH) {
     console.log("No TWITCH_AUTH found. Using nimhzaT auth as default.")
 }
 if (!COMMAND_NAME) {
-    COMMAND_NAME = process.env.COMMAND_NAME
+    COMMAND_NAME = ["tazcidbot"]
 } else {
     // split commands by comma into array
     COMMAND_NAME = COMMAND_NAME.split(",")
 }
 COMMAND_NAME = COMMAND_NAME.map(function(x){ return x.toLowerCase() })
 if (!CHANNELS) {
-    CHANNELS = process.env.CHANNELS
+    CHANNELS = ["Tazcidity", "Tazcidbot"]
 } else {
     // split channels by comma into array
     CHANNELS = CHANNELS.split(",")
