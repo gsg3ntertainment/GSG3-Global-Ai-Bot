@@ -2,8 +2,6 @@ import tmi from 'tmi.js';
 import OpenAI from 'openai';
 import mysql from 'mysql2/promise';
 
-type MessageHandler = (channel: string, userstate: any, message: string, self: boolean) => void;
-
 class TwitchBot {
     client: tmi.Client;
     openai: OpenAI;
