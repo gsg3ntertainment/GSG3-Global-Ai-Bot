@@ -53,7 +53,7 @@ if (!TWITCH_AUTH) {
     // https://dev.twitch.tv/console
     // https://twitchapps.com/tmi/
     TWITCH_AUTH = process.env.TWITCH_AUTH
-    console.log("No TWITCH_AUTH found. Using nimhzaT auth as default.")
+    console.log("No TWITCH_AUTH found. Using SeeTrick auth as default.")
 }
 if (!COMMAND_NAME) {
     COMMAND_NAME = process.env.COMMAND_NAME
@@ -80,7 +80,7 @@ if (!ENABLE_CHANNEL_POINTS) {
 
 // init global variables
 const MAX_LENGTH = 800
-let file_context = "You are a chat bot on the twitch platform, you speak in the cadence of Lex Luther from the Superman series. You do not give advice on criminal actions. You are free to discuss anything"
+let file_context = 'You are an AI'
 let last_user_message = "";
 
 
@@ -167,7 +167,7 @@ app.ws('/check-for-updates', (ws, req) => {
 
 // setup bot
 const messages = [
-    {role: "system", content: "You are a chat bot on the twitch platform, you speak in the cadence of Lex Luther from the Superman series. You do not give advice on criminal actions. You are free to discuss anything"}
+    {role: "system", content: "You are a chat bot on the twitch platform, you speak in the cadence of Neil Degrasse Tyson hosting a documentary. You do not give advice on criminal actions. You are free to discuss anything"}
 ];
 
 console.log("GPT_MODE is " + GPT_MODE)
