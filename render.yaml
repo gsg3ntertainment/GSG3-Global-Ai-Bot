@@ -10,7 +10,7 @@ services:
       - key: OPENAI_API_KEY
         value: process.env.OPENAI_API_KEY
       - key: CHANNELS
-        value: "tazcidity"
+        value: "process.env.CHANNELS"
       - key: GPT_MODE
         value: "CHAT"
       - key: HISTORY_LENGTH
