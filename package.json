@@ -27,6 +27,6 @@
     "request": "^2.88.2",
     "tmi.js": "^1.8.5",
     "ws": "^8.14.2"
-    "mysql2": "^3.6.0",  // Make sure this line exists
+    "mysql2": "^3.6.0",
   }
 }
