@@ -24,7 +24,7 @@ const client = new Client({
 });
 
 client.once('ready', () => {
-    console.log(🤖 Discord Bot is online as ${client.user.tag});
+    console.log('🤖 Discord Bot is online as ${client.user.tag}');
 });
 
 // Initialize OpenAI operations
@@ -103,8 +103,8 @@ async function sendPoll(channel) {
     const options = ["Dust2", "Anubis", "Nuke", "Mirage", "Inferno", "Ancient", "Train"];
 
     const buttons = options.map((option, index) => 
-        new ButtonBuilder()
-            .setCustomId(poll_${index})
+       new ButtonBuilder().setCustomId(`poll_${index}`)
+
             .setLabel(option)
             .setStyle(ButtonStyle.Primary)
     );
