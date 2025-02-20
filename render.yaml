@@ -10,7 +10,7 @@ services:
       - key: OPENAI_API_KEY
         value: process.env.OPENAI_API_KEY
       - key: CHANNELS
-        value: "process.env.CHANNELS"
+        value: process.env.CHANNELS
       - key: GPT_MODE
         value: "CHAT"
       - key: HISTORY_LENGTH
@@ -18,9 +18,9 @@ services:
       - key: MODEL_NAME
         value: "gpt-3.5-turbo"
       - key: COMMAND_NAME
-        value: "#"
+        value: process.env.COMMAND_NAME
       - key: TWITCH_USER  # https://dev.twitch.tv/console
-        value: "RichardWaffles"
+        value: process.env.TWITCH_USER
       - key: TWITCH_AUTH  # https://twitchapps.com/tmi/
         value: process.env.TWITCH_AUTH
       - key: SEND_USERNAME
