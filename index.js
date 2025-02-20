@@ -1,4 +1,3 @@
-
 import express from 'express';
 import fs from 'fs';
 import ws from 'ws';
@@ -9,6 +8,7 @@ import {job} from './keep_alive.js';
 
 import {OpenAIOperations} from './openai_operations.js';
 import {TwitchBot} from './twitch_bot.js';
+import bot from './discord_bot.js';
 
 // start keep alive cron job
 job.start();
