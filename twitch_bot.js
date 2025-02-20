@@ -1,188 +1,110 @@
-// Import tmi.js module
 import tmi from 'tmi.js';
 import OpenAI from 'openai';
-import { promises as fsPromises } from 'fs';
+import mysql from 'mysql2/promise';
 
-export class TwitchBot {
-    constructor(bot_username, oauth_token, channels, openai_api_key, enable_tts) {
-        this.channels = channels;
-        this.client = new tmi.client({
-            connection: {
-                reconnect: true,
-                secure: true
-            },
-            identity: {
-                username: bot_username,
-                password: oauth_token
-            },
-            channels: this.channels
+type MessageHandler = (channel: string, userstate: any, message: string, self: boolean) => void;
+
+class TwitchBot {
+    client: tmi.Client;
+    openai: OpenAI;
+    db: mysql.Pool;
+    enable_tts: boolean;
+
+    constructor(username: string, password: string, channels: string[], openai_api_key: string, enable_tts: boolean) {
+        this.client = new tmi.Client({
+            options: { debug: true },
+            identity: { username, password },
+            channels
         });
-        this.openai = new OpenAI({apiKey: openai_api_key});
+        
+        this.openai = new OpenAI({ apiKey: openai_api_key });
         this.enable_tts = enable_tts;
+        this.initDatabase();
     }
 
-    addChannel(channel) {
-        // Check if channel is already in the list
-        if (!this.channels.includes(channel)) {
-            this.channels.push(channel);
-            // Use join method to join a channel instead of modifying the channels property directly
-            this.client.join(channel);
+    async initDatabase() {
+        this.db = await mysql.createPool({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+            waitForConnections: true,
+            connectionLimit: 10,
+            queueLimit: 0
+        });
+        
+        await this.db.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                username VARCHAR(255) PRIMARY KEY,
+                points INT DEFAULT 0
+            );
+        `);
+    }
+
+    async connect() {
+        await this.client.connect();
+        console.log('Twitch Bot Connected');
+    }
+
+    async handleMessage(channel: string, userstate: any, message: string, self: boolean) {
+        if (self) return;
+        const username = userstate.username.toLowerCase();
+        console.log(`${username}: ${message}`);
+        
+        if (message.startsWith('!points')) {
+            await this.getPoints(channel, username);
+        } else if (message.startsWith('!addpoints')) {
+            const parts = message.split(' ');
+            if (parts.length === 3) {
+                const targetUser = parts[1].replace('@', '').toLowerCase();
+                const points = parseInt(parts[2]);
+                if (!isNaN(points)) await this.addPoints(channel, targetUser, points);
+            }
+        } else if (message.startsWith('!ask')) {
+            const query = message.replace('!ask', '').trim();
+            if (query) await this.getAIResponse(channel, username, query);
         }
     }
 
-    connect() {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the connection to be established
-                await this.client.connect();
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
+    async getPoints(channel: string, username: string) {
+        const [rows] = await this.db.query('SELECT points FROM users WHERE username = ?', [username]);
+        const points = rows.length ? rows[0].points : 0;
+        this.client.say(channel, `@${username}, you have ${points} points.`);
     }
 
-    disconnect() {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the connection to be closed
-                await this.client.disconnect();
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
+    async addPoints(channel: string, username: string, amount: number) {
+        await this.db.query('INSERT INTO users (username, points) VALUES (?, ?) ON DUPLICATE KEY UPDATE points = points + ?', [username, amount, amount]);
+        this.client.say(channel, `@${username}, you have been awarded ${amount} points!`);
     }
 
-    onMessage(callback) {
-        this.client.on('message', callback);
-    }
-
-    onConnected(callback) {
-        this.client.on('connected', callback);
-    }
-
-    onDisconnected(callback) {
-        this.client.on('disconnected', callback);
-    }
-
-    say(channel, message) {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the message to be sent
-                await this.client.say(channel, message);
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
-    }
-
-    async sayTTS(channel, text, userstate) {
-        // Check if TTS is enabled
-        if (this.enable_tts !== 'true') {
-            return;
-        }
+    async getAIResponse(channel: string, username: string, query: string) {
         try {
-            // Make a call to the OpenAI TTS model
-            const mp3 = await this.openai.audio.speech.create({
-                model: 'tts-1',
-                voice: 'alloy',
-                input: text,
+            const response = await this.openai.chat.completions.create({
+                model: 'gpt-4',
+                messages: [{ role: 'user', content: query }],
             });
-
-            // Convert the mp3 to a buffer
-            const buffer = Buffer.from(await mp3.arrayBuffer());
-
-            // Save the buffer as an MP3 file
-            const filePath = './public/file.mp3';
-            await fsPromises.writeFile(filePath, buffer);
-
-            // Return the path of the saved audio file
-            return filePath;
+            const reply = response.choices[0].message.content;
+            this.client.say(channel, `@${username}, ${reply}`);
         } catch (error) {
-            console.error('Error in sayTTS:', error);
+            console.error('Error fetching OpenAI response:', error);
         }
     }
 
-    whisper(username, message) {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the message to be sent
-                await this.client.whisper(username, message);
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
-    }
-
-    ban(channel, username, reason) {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the user to be banned
-                await this.client.ban(channel, username, reason);
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
-    }
-
-    unban(channel, username) {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the user to be unbanned
-                await this.client.unban(channel, username);
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
-    }
-
-    clear(channel) {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the chat to be cleared
-                await this.client.clear(channel);
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
-    }
-
-    color(channel, color) {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the color to be changed
-                await this.client.color(channel, color);
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
-    }
-
-    commercial(channel, seconds) {
-        // Use async/await syntax to handle promises
-        (async () => {
-            try {
-                // Await for the commercial to be played
-                await this.client.commercial(channel, seconds);
-            } catch (error) {
-                // Handle any errors that may occur
-                console.error(error);
-            }
-        })();
+    onMessage() {
+        this.client.on('message', (channel, userstate, message, self) => {
+            this.handleMessage(channel, userstate, message, self);
+        });
     }
 }
+
+// Instantiate the bot
+const bot = new TwitchBot(
+    process.env.TWITCH_USER,
+    `oauth:${process.env.TWITCH_AUTH}`,
+    process.env.CHANNELS.split(','),
+    process.env.OPENAI_API_KEY,
+    process.env.ENABLE_TTS === 'true'
+);
+
+bot.connect();
+bot.onMessage();
