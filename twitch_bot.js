@@ -1,32 +1,23 @@
-const client = new tmi.Client({
-    options: { debug: true },
-    connection: {
-        secure: true,
-        reconnect: true,
-    },
-    identity: {
-        username: process.env.TWITCH_BOT_USERNAME,
-        password: process.env.TWITCH_OAUTH_TOKEN,
-    },
-    channels: [process.env.TWITCH_CHANNEL],
-});
-
+import tmi from 'tmi.js';
 import OpenAI from 'openai';
 import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 class TwitchBot {
-    client: tmi.Client;
-    openai: OpenAI;
-    db: mysql.Pool;
-    enable_tts: boolean;
-
-    constructor(username: string, password: string, channels: string[], openai_api_key: string, enable_tts: boolean) {
+    constructor(username, password, channels, openai_api_key, enable_tts) {
         this.client = new tmi.Client({
             options: { debug: true },
+            connection: {
+                secure: true,
+                reconnect: true
+            },
             identity: { username, password },
             channels
         });
-        
+
         this.openai = new OpenAI({ apiKey: openai_api_key });
         this.enable_tts = enable_tts;
         this.initDatabase();
@@ -42,7 +33,7 @@ class TwitchBot {
             connectionLimit: 10,
             queueLimit: 0
         });
-        
+
         await this.db.query(`
             CREATE TABLE IF NOT EXISTS users (
                 username VARCHAR(255) PRIMARY KEY,
@@ -56,11 +47,11 @@ class TwitchBot {
         console.log('Twitch Bot Connected');
     }
 
-    async handleMessage(channel: string, userstate: any, message: string, self: boolean) {
+    async handleMessage(channel, userstate, message, self) {
         if (self) return;
         const username = userstate.username.toLowerCase();
         console.log(`${username}: ${message}`);
-        
+
         if (message.startsWith('!points')) {
             await this.getPoints(channel, username);
         } else if (message.startsWith('!addpoints')) {
@@ -76,22 +67,25 @@ class TwitchBot {
         }
     }
 
-    async getPoints(channel: string, username: string) {
+    async getPoints(channel, username) {
         const [rows] = await this.db.query('SELECT points FROM users WHERE username = ?', [username]);
         const points = rows.length ? rows[0].points : 0;
         this.client.say(channel, `@${username}, you have ${points} points.`);
     }
 
-    async addPoints(channel: string, username: string, amount: number) {
-        await this.db.query('INSERT INTO users (username, points) VALUES (?, ?) ON DUPLICATE KEY UPDATE points = points + ?', [username, amount, amount]);
+    async addPoints(channel, username, amount) {
+        await this.db.query(
+            'INSERT INTO users (username, points) VALUES (?, ?) ON DUPLICATE KEY UPDATE points = points + ?',
+            [username, amount, amount]
+        );
         this.client.say(channel, `@${username}, you have been awarded ${amount} points!`);
     }
 
-    async getAIResponse(channel: string, username: string, query: string) {
+    async getAIResponse(channel, username, query) {
         try {
             const response = await this.openai.chat.completions.create({
                 model: 'gpt-4',
-                messages: [{ role: 'user', content: query }],
+                messages: [{ role: 'user', content: query }]
             });
             const reply = response.choices[0].message.content;
             this.client.say(channel, `@${username}, ${reply}`);
