@@ -127,33 +127,37 @@ async function sendPoll(channel) {
 
 // Slash Command: /clear <user>
 client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand() || interaction.commandName !== 'clear') return;
-
-    const targetUser = interaction.options.getUser('user');
-    if (!targetUser) {
-        return interaction.reply({ content: "❌ You must mention a user!", ephemeral: true });
+    if (interaction.isCommand()) {
+        if (interaction.commandName === 'mappoll') {
+            await interaction.reply({ content: "🗳️ Creating a map poll...", ephemeral: true });
+            const channel = interaction.channel;
+            if (!channel) {
+                return interaction.followUp({ content: "❌ Could not access the channel.", ephemeral: true });
+            }
+            sendPoll(channel);
+        }
+        return;
     }
 
-    const channel = interaction.channel;
-    if (!channel) {
-        return interaction.reply({ content: "❌ Could not access the channel.", ephemeral: true });
-    }
+    if (interaction.isButton()) {
+        if (!interaction.customId.startsWith('poll_')) return;
 
-    try {
-        const messages = await channel.messages.fetch({ limit: 100 });
-        const userMessages = messages
-            .filter(msg => msg.author.id === targetUser.id)
-            .first(50);
-
-        if (userMessages.length === 0) {
-            return interaction.reply({ content: ⚠️ No messages found from ${targetUser.username}., ephemeral: true });
+        const pollData = activePolls.get(interaction.message.id);
+        if (!pollData) {
+            return interaction.reply({ content: "❌ This poll is no longer active.", ephemeral: true });
         }
 
-        await channel.bulkDelete(userMessages, true);
-        await interaction.reply({ content: ✅ Deleted ${userMessages.length} messages from ${targetUser.username}. });
-    } catch (error) {
-        console.error("Clear command error:", error);
-        await interaction.reply({ content: "❌ Error deleting messages.", ephemeral: true });
+        const voteIndex = parseInt(interaction.customId.replace('poll_', ''), 10);
+        const selectedOption = pollData.options[voteIndex];
+
+        if (!selectedOption) {
+            return interaction.reply({ content: "❌ Invalid vote option.", ephemeral: true });
+        }
+
+        // Track user votes
+        pollData.votes.set(interaction.user.id, selectedOption);
+
+        await interaction.reply({ content: `✅ You voted for **${selectedOption}**!`, ephemeral: true });
     }
 });
 
