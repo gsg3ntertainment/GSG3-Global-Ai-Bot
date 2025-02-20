@@ -46,7 +46,7 @@ if (!MODEL_NAME) {
     MODEL_NAME = "gpt-3.5-turbo"
 }
 if (!TWITCH_USER) {
-    TWITCH_USER = "Tazcidbot"
+    TWITCH_USER = process.env.TWITCH_USER
     console.log("No TWITCH_USER found. Using nimhzaT as default.")
 }
 if (!TWITCH_AUTH) {
@@ -56,14 +56,14 @@ if (!TWITCH_AUTH) {
     console.log("No TWITCH_AUTH found. Using nimhzaT auth as default.")
 }
 if (!COMMAND_NAME) {
-    COMMAND_NAME = ["tazcidbot"]
+    COMMAND_NAME = process.env.COMMAND_NAME
 } else {
     // split commands by comma into array
     COMMAND_NAME = COMMAND_NAME.split(",")
 }
 COMMAND_NAME = COMMAND_NAME.map(function(x){ return x.toLowerCase() })
 if (!CHANNELS) {
-    CHANNELS = ["Tazcidity", "Tazcidbot"]
+    CHANNELS = process.env.CHANNELS
 } else {
     // split channels by comma into array
     CHANNELS = CHANNELS.split(",")
