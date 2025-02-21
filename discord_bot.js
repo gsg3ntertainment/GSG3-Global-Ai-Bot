@@ -23,8 +23,30 @@ const bot = new Client({
     ],
 });
 
-bot.once('ready', () => {
+bot.once('ready', async () => {
     console.log(`🤖 Discord Bot is online as ${bot.user.tag}`);
+
+    try {
+        const guildId = process.env.GUILD_ID;
+        if (!guildId) {
+            throw new Error("GUILD_ID is missing in environment variables.");
+        }
+
+        const guild = bot.guilds.cache.get(guildId);
+        if (!guild) {
+            throw new Error("Guild not found!");
+        }
+
+        await guild.commands.create(
+            new SlashCommandBuilder()
+                .setName('mappoll')
+                .setDescription('Creates a map vote poll with buttons.')
+        );
+
+        console.log("✅ Slash command `/mappoll` registered.");
+    } catch (error) {
+        console.error("❌ Error registering slash commands:", error);
+    }
 });
 
 // Initialize OpenAI operations
@@ -38,7 +60,7 @@ const openaiOps = new OpenAIOperations(
 // Store active polls
 const activePolls = new Collection();
 
-// 🆕 AI Support for "support" Channel
+// AI Support for "support" Channel
 const supportChannelId = process.env.SUPPORT_CHANNEL_ID;
 const ownerRoleId = process.env.OWNER_ROLE_ID;
 const managerRoleId = process.env.MANAGER_ROLE_ID;
@@ -121,28 +143,8 @@ async function sendPoll(channel) {
     }
 }
 
-bot.on('ready', async () => {
-    try {
-        const guildId = process.env.GUILD_ID;
-        if (!guildId) {
-            throw new Error("GUILD_ID is missing in environment variables.");
-        }
+// Correct export
+export { bot };
 
-        const guild = bot.guilds.cache.get(guildId);
-        if (!guild) {
-            throw new Error("Guild not found!");
-        }
-
-        await guild.commands.create(
-            new SlashCommandBuilder()
-                .setName('mappoll')
-                .setDescription('Creates a map vote poll with buttons.')
-        );
-
-        console.log("✅ Slash command `/mappoll` registered.");
-    } catch (error) {
-        console.error("❌ Error registering slash commands:", error);
-    }
-});
-
+// Log in the bot
 bot.login(process.env.DISCORD_TOKEN);
