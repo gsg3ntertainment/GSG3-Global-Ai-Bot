@@ -98,7 +98,7 @@ client.on('interactionCreate', async (interaction) => {
 
         sendPoll(channel);
     }
-});
+};
 
 // Function to send a poll
 async function sendPoll(channel) {
