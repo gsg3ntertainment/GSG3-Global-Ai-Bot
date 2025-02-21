@@ -6,7 +6,8 @@ import {
     ButtonStyle, 
     EmbedBuilder, 
     Collection, 
-    SlashCommandBuilder
+    SlashCommandBuilder,
+    PermissionsBitField
 } from 'discord.js';
 import dotenv from 'dotenv';
 import { OpenAIOperations } from './openai_operations.js';
@@ -36,6 +37,44 @@ const openaiOps = new OpenAIOperations(
 
 // Store active polls
 const activePolls = new Collection();
+
+// 🆕 AI Support for "support" Channel
+const supportChannelId = process.env.SUPPORT_CHANNEL_ID;
+const ownerRoleId = process.env.OWNER_ROLE_ID;
+const managerRoleId = process.env.MANAGER_ROLE_ID;
+const adminRoleId = process.env.ADMIN_ROLE_ID;
+const acknowledgedUsers = new Set();
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot || message.channel.id !== supportChannelId) return;
+
+    console.log(`💬 Support message detected from ${message.author.username}: ${message.content}`);
+
+    // Determine topic-based role mention
+    let roleToMention = null;
+    if (message.content.toLowerCase().includes("digitaltrove.net")) {
+        roleToMention = `<@&${ownerRoleId}> or <@&${managerRoleId}>`;
+    } else if (message.content.toLowerCase().includes("discord") || message.content.toLowerCase().includes("game")) {
+        roleToMention = `<@&${adminRoleId}>`;
+    }
+
+    // First message acknowledgment
+    if (!acknowledgedUsers.has(message.author.id)) {
+        acknowledgedUsers.add(message.author.id);
+        await message.reply(`👋 Hi ${message.author.username}, a staff member will assist you shortly.`);
+    }
+
+    // Generate AI response
+    const aiResponse = await openaiOps.askAI(message.content);
+    let reply = `${aiResponse}`;
+
+    // Append role mention if necessary
+    if (roleToMention) {
+        reply += `\n\n🔔 Notifying: ${roleToMention}`;
+    }
+
+    await message.channel.send(reply);
+});
 
 // Slash Command: /mappoll
 client.on('interactionCreate', async (interaction) => {
@@ -80,58 +119,6 @@ async function sendPoll(channel) {
         await endPoll(pollMessage);
     }, 60000);
 }
-
-// Function to end the poll and show results
-async function endPoll(pollMessage) {
-    const pollData = activePolls.get(pollMessage.id);
-    if (!pollData) return;
-
-    const voteCounts = new Map();
-    pollData.options.forEach(option => voteCounts.set(option, 0));
-
-    pollData.votes.forEach(vote => {
-        voteCounts.set(vote, (voteCounts.get(vote) || 0) + 1);
-    });
-
-    let results = "**🗳️ Poll Results:**\n";
-    pollData.options.forEach(option => {
-        results += `**${option}:** ${voteCounts.get(option)} votes\n`;
-    });
-
-    await pollMessage.channel.send(results);
-    activePolls.delete(pollMessage.id);
-
-    // Optional: Delete poll message after results
-    setTimeout(() => pollMessage.delete().catch(() => {}), 5000);
-}
-
-// Handle poll button interactions
-client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isButton()) return;
-
-    const pollData = activePolls.get(interaction.message.id);
-    if (!pollData) return;
-
-    const userId = interaction.user.id;
-    if (pollData.votes.has(userId)) {
-        await interaction.reply({ content: "⚠️ You can only vote once!", ephemeral: true });
-        return;
-    }
-
-    await interaction.deferReply({ ephemeral: true });
-
-    const optionIndex = parseInt(interaction.customId.replace("poll_", ""));
-    if (isNaN(optionIndex) || optionIndex >= pollData.options.length) return;
-
-    const chosenOption = pollData.options[optionIndex];
-    pollData.votes.set(userId, chosenOption);
-
-    try {
-        await interaction.followUp({ content: `✅ You voted for **${chosenOption}**!`, ephemeral: true });
-    } catch (error) {
-        console.error("Failed to reply to interaction:", error);
-    }
-});
 
 // Slash Command: /clear <user>
 client.on('interactionCreate', async (interaction) => {
