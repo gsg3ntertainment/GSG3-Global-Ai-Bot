@@ -263,3 +263,4 @@ function notifyFileChange() {
     });
 }
 import './discord_bot.js';
+export { bot };
