@@ -1,7 +1,6 @@
 import express from 'express';
 import fs from 'fs';
 import ws from 'ws';
-import { bot } from './discord_bot.js';
 import expressWs from 'express-ws';
 
 import {job} from './keep_alive.js';
@@ -263,3 +262,4 @@ function notifyFileChange() {
         }
     });
 }
+import './discord_bot.js';
