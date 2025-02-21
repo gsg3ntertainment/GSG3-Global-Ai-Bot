@@ -145,5 +145,4 @@ bot.on('ready', async () => {
     }
 });
 
-export const bot = bot;
 bot.login(process.env.DISCORD_TOKEN);
