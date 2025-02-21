@@ -10,7 +10,6 @@ import {
 } from 'discord.js';
 import dotenv from 'dotenv';
 import { OpenAIOperations } from './openai_operations.js';
-import { bot } from './index.js';
 
 dotenv.config();
 
