@@ -14,7 +14,7 @@ import { OpenAIOperations } from './openai_operations.js';
 
 dotenv.config();
 
-const client = new Client({
+const bot = new Client({
     intents: [
         GatewayIntentBits.Guilds,              
         GatewayIntentBits.GuildMessages,       
@@ -23,8 +23,8 @@ const client = new Client({
     ],
 });
 
-client.once('ready', () => {
-    console.log(`🤖 Discord Bot is online as ${client.user.tag}`);
+bot.once('ready', () => {
+    console.log(`🤖 Discord Bot is online as ${bot.user.tag}`);
 });
 
 // Initialize OpenAI operations
@@ -45,7 +45,7 @@ const managerRoleId = process.env.MANAGER_ROLE_ID;
 const adminRoleId = process.env.ADMIN_ROLE_ID;
 const acknowledgedUsers = new Set();
 
-client.on('messageCreate', async (message) => {
+bot.on('messageCreate', async (message) => {
     if (message.author.bot || message.channel.id !== supportChannelId) return;
 
     console.log(`💬 Support message detected from ${message.author.username}: ${message.content}`);
@@ -84,7 +84,7 @@ client.on('messageCreate', async (message) => {
 });
 
 // Slash Command: /mappoll
-client.on('interactionCreate', async (interaction) => {
+bot.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'mappoll') {
@@ -127,47 +127,15 @@ async function sendPoll(channel) {
     }, 60000);
 }
 
-// Slash Command: /clear <user>
-client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand() || interaction.commandName !== 'clear') return;
-
-    const targetUser = interaction.options.getUser('user');
-    if (!targetUser) {
-        return interaction.reply({ content: "❌ You must mention a user!", ephemeral: true });
-    }
-
-    const channel = interaction.channel;
-    if (!channel) {
-        return interaction.reply({ content: "❌ Could not access the channel.", ephemeral: true });
-    }
-
-    try {
-        const messages = await channel.messages.fetch({ limit: 100 });
-        const userMessages = messages
-            .filter(msg => msg.author.id === targetUser.id)
-            .first(50);
-
-        if (userMessages.length === 0) {
-            return interaction.reply({ content: `⚠️ No messages found from ${targetUser.username}.`, ephemeral: true });
-        }
-
-        await channel.bulkDelete(userMessages, true);
-        await interaction.reply({ content: `✅ Deleted ${userMessages.length} messages from ${targetUser.username}.` });
-    } catch (error) {
-        console.error("Clear command error:", error);
-        await interaction.reply({ content: "❌ Error deleting messages.", ephemeral: true });
-    }
-});
-
 // Register Slash Commands
-client.on('ready', async () => {
+bot.on('ready', async () => {
     const guildId = process.env.GUILD_ID;
     if (!guildId) {
         console.error("❌ GUILD_ID is missing in environment variables.");
         return;
     }
 
-    const guild = client.guilds.cache.get(guildId);
+    const guild = bot.guilds.cache.get(guildId);
     if (!guild) {
         console.error("❌ Guild not found!");
         return;
@@ -180,24 +148,12 @@ client.on('ready', async () => {
                 .setDescription('Creates a map vote poll with buttons.')
         );
 
-        await guild.commands.create(
-            new SlashCommandBuilder()
-                .setName('clear')
-                .setDescription('Clears the last 50 messages from a specified user in this channel.')
-                .addUserOption(option =>
-                    option.setName('user')
-                        .setDescription('The user whose messages you want to clear')
-                        .setRequired(true)
-                )
-        );
-
-        console.log("✅ Slash commands `/mappoll` and `/clear` registered.");
+        console.log("✅ Slash command `/mappoll` registered.");
     } catch (error) {
         console.error("❌ Error registering slash commands:", error);
     }
 });
-export const bot = client;
-
+export const bot = bot;
 
 // Login the bot
-client.login(process.env.DISCORD_TOKEN);
+bot.login(process.env.DISCORD_TOKEN);
