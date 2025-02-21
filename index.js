@@ -18,18 +18,18 @@ const expressWsInstance = expressWs(app);
 app.set('view engine', 'ejs');
 
 // Load environment variables
-const GPT_MODE = process.env.GPT_MODE || 'CHAT';
-const HISTORY_LENGTH = process.env.HISTORY_LENGTH || 5;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
-const MODEL_NAME = process.env.MODEL_NAME || ;
-const TWITCH_USER = process.env.TWITCH_USER || ;
-const TWITCH_AUTH = process.env.TWITCH_AUTH || ;
-const COMMAND_NAME = process.env.COMMAND_NAME || '#';
-const CHANNELS = process.env.CHANNELS || ;
-const SEND_USERNAME = process.env.SEND_USERNAME || 'true';
-const ENABLE_TTS = process.env.ENABLE_TTS || 'false';
-const ENABLE_CHANNEL_POINTS = process.env.ENABLE_CHANNEL_POINTS || 'false';
-const COOLDOWN_DURATION = parseInt(process.env.COOLDOWN_DURATION, 10) || 10; // Cooldown duration in seconds
+const GPT_MODE = process.env.GPT_MODE;
+const HISTORY_LENGTH = process.env.HISTORY_LENGTH;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const MODEL_NAME = process.env.MODEL_NAME;
+const TWITCH_USER = process.env.TWITCH_USER;
+const TWITCH_AUTH = process.env.TWITCH_AUTH ;
+const COMMAND_NAME = process.env.COMMAND_NAME;
+const CHANNELS = process.env.CHANNELS;
+const SEND_USERNAME = process.env.SEND_USERNAME;
+const ENABLE_TTS = process.env.ENABLE_TTS;
+const ENABLE_CHANNEL_POINTS = process.env.ENABLE_CHANNEL_POINTS;
+const COOLDOWN_DURATION = parseInt(process.env.COOLDOWN_DURATION, 10); // Cooldown duration in seconds
 
 if (!OPENAI_API_KEY) {
     console.error('No OPENAI_API_KEY found. Please set it as an environment variable.');
