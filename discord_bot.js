@@ -196,6 +196,8 @@ client.on('ready', async () => {
         console.error("❌ Error registering slash commands:", error);
     }
 });
+export const bot = client;
+
 
 // Login the bot
 client.login(process.env.DISCORD_TOKEN);
