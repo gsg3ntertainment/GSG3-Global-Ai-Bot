@@ -82,7 +82,7 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'mappoll') {
-        await interaction.reply({ content: "🗳️ Creating a map poll...", flags: InteractionResponseFlags.Ephemeral });
+        await interaction.reply({ content: "Your message", ephemeral: true });
 
         const channel = interaction.channel;
         if (!channel) {
