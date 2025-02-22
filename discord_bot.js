@@ -7,9 +7,9 @@ import {
     EmbedBuilder, 
     Collection, 
     SlashCommandBuilder,
-    PermissionsBitField,
-    InteractionResponseFlags
+    PermissionsBitField
 } from 'discord.js';
+
 import dotenv from 'dotenv';
 import { OpenAIOperations } from './openai_operations.js';
 
