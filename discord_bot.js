@@ -7,7 +7,8 @@ import {
     EmbedBuilder, 
     Collection, 
     SlashCommandBuilder,
-    PermissionsBitField
+    PermissionsBitField,
+    InteractionResponseFlags
 } from 'discord.js';
 import dotenv from 'dotenv';
 import { OpenAIOperations } from './openai_operations.js';
@@ -38,7 +39,7 @@ const openaiOps = new OpenAIOperations(
 // Store active polls
 const activePolls = new Collection();
 
-// 🆕 AI Support for "support" Channel
+// AI Support for "support" Channel
 const supportChannelId = process.env.SUPPORT_CHANNEL_ID;
 const ownerRoleId = process.env.OWNER_ROLE_ID;
 const managerRoleId = process.env.MANAGER_ROLE_ID;
@@ -81,11 +82,11 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'mappoll') {
-        await interaction.reply({ content: "🗳️ Creating a map poll...", ephemeral: true });
+        await interaction.reply({ content: "🗳️ Creating a map poll...", flags: InteractionResponseFlags.Ephemeral });
 
         const channel = interaction.channel;
         if (!channel) {
-            return interaction.followUp({ content: "❌ Could not access the channel.", ephemeral: true });
+            return interaction.followUp({ content: "❌ Could not access the channel.", flags: InteractionResponseFlags.Ephemeral });
         }
 
         sendPoll(channel);
@@ -126,12 +127,12 @@ client.on('interactionCreate', async (interaction) => {
 
     const targetUser = interaction.options.getUser('user');
     if (!targetUser) {
-        return interaction.reply({ content: "❌ You must mention a user!", ephemeral: true });
+        return interaction.reply({ content: "❌ You must mention a user!", flags: InteractionResponseFlags.Ephemeral });
     }
 
     const channel = interaction.channel;
     if (!channel) {
-        return interaction.reply({ content: "❌ Could not access the channel.", ephemeral: true });
+        return interaction.reply({ content: "❌ Could not access the channel.", flags: InteractionResponseFlags.Ephemeral });
     }
 
     try {
@@ -141,14 +142,14 @@ client.on('interactionCreate', async (interaction) => {
             .first(50);
 
         if (userMessages.length === 0) {
-            return interaction.reply({ content: `⚠️ No messages found from ${targetUser.username}.`, ephemeral: true });
+            return interaction.reply({ content: `⚠️ No messages found from ${targetUser.username}.`, flags: InteractionResponseFlags.Ephemeral });
         }
 
         await channel.bulkDelete(userMessages, true);
         await interaction.reply({ content: `✅ Deleted ${userMessages.length} messages from ${targetUser.username}.` });
     } catch (error) {
         console.error("Clear command error:", error);
-        await interaction.reply({ content: "❌ Error deleting messages.", ephemeral: true });
+        await interaction.reply({ content: "❌ Error deleting messages.", flags: InteractionResponseFlags.Ephemeral });
     }
 });
 
