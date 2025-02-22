@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-  "start": "node index.js && node discord_bot.js"
+  "start": "concurrently \"node index.js\" \"node discord_bot.js\""
 }
   "repository": {
     "type": "git",
