@@ -15,7 +15,7 @@ const client = new Client({
 });
 
 client.once('ready', () => {
-  console.log(🤖 Discord Bot is online as ${client.user.tag});
+  console.log("🤖 Discord Bot is online as ${client.user.tag}");
 });
 
 // Initialize OpenAI operations
