@@ -5,6 +5,9 @@ import expressWs from 'express-ws';
 import {job} from './keep_alive.js';
 import {OpenAIOperations} from './openai_operations.js';
 import {TwitchBot} from './twitch_bot.js';
+import { startDiscordBot } from './discord_bot.js';
+
+startDiscordBot(); // Start the Discord bot
 
 // Start keep alive cron job
 job.start();
