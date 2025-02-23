@@ -49,5 +49,60 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// Login the bot
-client.login(process.env.DISCORD_TOKEN);
+import { Client, GatewayIntentBits } from 'discord.js';
+import dotenv from 'dotenv';
+import { OpenAIOperations } from './openai_operations.js';
+
+dotenv.config();
+
+// Initialize the Discord Client
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,              
+    GatewayIntentBits.GuildMessages,       
+    GatewayIntentBits.MessageContent,      
+    GatewayIntentBits.GuildMembers         
+  ],
+});
+
+client.once('ready', () => {
+  console.log(`🤖 Discord Bot is online as ${client.user.tag}`);
+});
+
+// Initialize OpenAI operations
+const openaiOps = new OpenAIOperations(
+    'You are a helpful Discord chatbot.',
+    process.env.OPENAI_API_KEY,
+    process.env.MODEL_NAME,
+    process.env.HISTORY_LENGTH
+);
+
+// Listen for messages
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+
+    const content = message.content.trim().toLowerCase();
+
+    if (content.startsWith('!')) {
+        const userMessage = content.replace('!', '').trim();
+        if (!userMessage) {
+            message.reply('Please provide a message after !');
+            return;
+        }
+
+        try {
+            const response = await openaiOps.make_openai_call(userMessage);
+            message.reply(response);
+        } catch (error) {
+            console.error('OpenAI API Error:', error);
+            message.reply('⚠️ Error processing your request.');
+        }
+    }
+});
+
+// Login function to start the bot
+function startDiscordBot() {
+    client.login(process.env.DISCORD_TOKEN);
+}
+
+export { startDiscordBot, client };
