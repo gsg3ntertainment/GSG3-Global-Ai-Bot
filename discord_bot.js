@@ -1,4 +1,4 @@
-from 'discord.js';
+import from 'discord.js';
 import dotenv from 'dotenv';
 import { OpenAIOperations } from './openai_operations.js';
 
