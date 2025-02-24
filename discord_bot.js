@@ -43,6 +43,7 @@ client.once('ready', () => {
     console.log(`🤖 Discord Bot is online as ${client.user.tag}`);
 });
 
+// Support message handling
 client.on('messageCreate', async (message) => {
     if (message.author.bot || message.channel.id !== supportChannelId) return;
 
@@ -84,7 +85,18 @@ client.on('interactionCreate', async (interaction) => {
         if (!channel) {
             return interaction.followUp({ content: "❌ Could not access the channel.", ephemeral: true });
         }
-        sendPoll(channel);
+        await sendPoll(channel);
+    } else if (interaction.commandName === 'clear') {
+        const targetUser = interaction.options.getUser('user');
+        if (!targetUser) {
+            return interaction.reply({ content: "❌ You must mention a user!", ephemeral: true });
+        }
+        await clearUserMessages(interaction.channel, targetUser);
+        await interaction.reply({ content: `✅ Cleared messages from ${targetUser.username}.`, ephemeral: true });
+    } else if (interaction.commandName === 'ask') {
+        const userQuestion = interaction.options.getString('question');
+        const aiResponse = await openaiOps.askAI(userQuestion);
+        await interaction.reply({ content: aiResponse, ephemeral: false });
     }
 });
 
@@ -114,6 +126,13 @@ async function sendPoll(channel) {
     setTimeout(async () => {
         await endPoll(pollMessage);
     }, 60000);
+}
+
+// Function to clear messages from a user
+async function clearUserMessages(channel, user) {
+    const fetched = await channel.messages.fetch({ limit: 100 });
+    const userMessages = fetched.filter(msg => msg.author.id === user.id);
+    await channel.bulkDelete(userMessages);
 }
 
 // Register Slash Commands
@@ -148,7 +167,18 @@ client.on('ready', async () => {
                 )
         );
 
-        console.log("✅ Slash commands `/votekick` and `/clear` registered.");
+        await guild.commands.create(
+            new SlashCommandBuilder()
+                .setName('ask')
+                .setDescription('Ask a question to the AI.')
+                .addStringOption(option =>
+                    option.setName('question')
+                        .setDescription('Your question for the AI')
+                        .setRequired(true)
+                )
+        );
+
+        console.log("✅ Slash commands `/votekick`, `/clear`, and `/ask` registered.");
     } catch (error) {
         console.error("❌ Error registering slash commands:", error);
     }
