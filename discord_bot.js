@@ -7,7 +7,6 @@ import {
     SlashCommandBuilder,
     PermissionsBitField
 } from 'discord.js';
-import { OpenAIOperations } from './openai_operations.js';
 
 dotenv.config();
 
