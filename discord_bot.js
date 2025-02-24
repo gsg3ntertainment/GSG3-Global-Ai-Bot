@@ -4,10 +4,8 @@ import {
     ActionRowBuilder, 
     ButtonBuilder, 
     ButtonStyle, 
-    EmbedBuilder, 
     Collection, 
-    SlashCommandBuilder,
-    PermissionsBitField
+    SlashCommandBuilder 
 } from 'discord.js';
 import dotenv from 'dotenv';
 import { OpenAIOperations } from './openai_operations.js';
@@ -16,15 +14,11 @@ dotenv.config();
 
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,              
-        GatewayIntentBits.GuildMessages,       
-        GatewayIntentBits.MessageContent,      
-        GatewayIntentBits.GuildMembers         
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers
     ],
-});
-
-client.once('ready', () => {
-    console.log(`🤖 Discord Bot is online as ${client.user.tag}`);
 });
 
 // Initialize OpenAI operations
@@ -44,6 +38,10 @@ const ownerRoleId = process.env.OWNER_ROLE_ID;
 const managerRoleId = process.env.MANAGER_ROLE_ID;
 const adminRoleId = process.env.ADMIN_ROLE_ID;
 const acknowledgedUsers = new Set();
+
+client.once('ready', () => {
+    console.log(`🤖 Discord Bot is online as ${client.user.tag}`);
+});
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot || message.channel.id !== supportChannelId) return;
@@ -76,18 +74,16 @@ client.on('messageCreate', async (message) => {
     await message.channel.send(reply);
 });
 
-// Slash Command: /mappoll
+// Slash Command: /votekick
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'votekick') {
         await interaction.reply({ content: "🗳️ Creating a kick poll...", ephemeral: true });
-
         const channel = interaction.channel;
         if (!channel) {
             return interaction.followUp({ content: "❌ Could not access the channel.", ephemeral: true });
         }
-
         sendPoll(channel);
     }
 });
@@ -119,38 +115,6 @@ async function sendPoll(channel) {
         await endPoll(pollMessage);
     }, 60000);
 }
-
-// Slash Command: /clear <user>
-client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand() || interaction.commandName !== 'clear') return;
-
-    const targetUser = interaction.options.getUser('user');
-    if (!targetUser) {
-        return interaction.reply({ content: "❌ You must mention a user!", ephemeral: true });
-    }
-
-    const channel = interaction.channel;
-    if (!channel) {
-        return interaction.reply({ content: "❌ Could not access the channel.", ephemeral: true });
-    }
-
-    try {
-        const messages = await channel.messages.fetch({ limit: 100 });
-        const userMessages = messages
-            .filter(msg => msg.author.id === targetUser.id)
-            .first(50);
-
-        if (userMessages.length === 0) {
-            return interaction.reply({ content: `⚠️ No messages found from ${targetUser.username}.`, ephemeral: true });
-        }
-
-        await channel.bulkDelete(userMessages, true);
-        await interaction.reply({ content: `✅ Deleted ${userMessages.length} messages from ${targetUser.username}.` });
-    } catch (error) {
-        console.error("Clear command error:", error);
-        await interaction.reply({ content: "❌ Error deleting messages.", ephemeral: true });
-    }
-});
 
 // Register Slash Commands
 client.on('ready', async () => {
@@ -184,7 +148,7 @@ client.on('ready', async () => {
                 )
         );
 
-        console.log("✅ Slash commands `/mappoll` and `/clear` registered.");
+        console.log("✅ Slash commands `/votekick` and `/clear` registered.");
     } catch (error) {
         console.error("❌ Error registering slash commands:", error);
     }
@@ -192,3 +156,5 @@ client.on('ready', async () => {
 
 // Login the bot
 client.login(process.env.DISCORD_TOKEN);
+
+export default client;
