@@ -2,10 +2,10 @@ import express from 'express';
 import fs from 'fs';
 import ws from 'ws';
 import expressWs from 'express-ws';
-import {job} from './keep_alive.js';
-import {OpenAIOperations} from './openai_operations.js';
-import {TwitchBot} from './twitch_bot.js';
-
+import { job } from './keep_alive.js';
+import { OpenAIOperations } from './openai_operations.js';
+import { TwitchBot } from './twitch_bot.js';
+import { DiscordBot } from './discord_bot.js'; // Import your Discord bot
 
 // Start keep alive cron job
 job.start();
@@ -24,7 +24,7 @@ const HISTORY_LENGTH = process.env.HISTORY_LENGTH;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const MODEL_NAME = process.env.MODEL_NAME;
 const TWITCH_USER = process.env.TWITCH_USER;
-const TWITCH_AUTH = process.env.TWITCH_AUTH ;
+const TWITCH_AUTH = process.env.TWITCH_AUTH;
 const COMMAND_NAME = process.env.COMMAND_NAME;
 const CHANNELS = process.env.CHANNELS;
 const SEND_USERNAME = process.env.SEND_USERNAME;
@@ -46,6 +46,9 @@ let lastResponseTime = 0; // Track the last response time
 // Setup Twitch bot
 console.log('Channels: ', channels);
 const bot = new TwitchBot(TWITCH_USER, TWITCH_AUTH, channels, OPENAI_API_KEY, ENABLE_TTS);
+
+// Setup Discord bot
+const discordBot = new DiscordBot(); // Initialize your Discord bot
 
 // Setup OpenAI operations
 fileContext = fs.readFileSync('./file_context.txt', 'utf8');
@@ -74,12 +77,14 @@ bot.connect(
     }
 );
 
+// Handle Twitch bot messages
 bot.onMessage(async (channel, user, message, self) => {
     if (self) return;
 
     const currentTime = Date.now();
     const elapsedTime = (currentTime - lastResponseTime) / 1000; // Time in seconds
 
+    // Channel points handling and command execution for Twitch bot
     if (ENABLE_CHANNEL_POINTS === 'true' && user['msg-id'] === 'highlighted-message') {
         console.log(`Highlighted message: ${message}`);
         if (elapsedTime < COOLDOWN_DURATION) {
@@ -126,6 +131,9 @@ bot.onMessage(async (channel, user, message, self) => {
             }
         }
     }
+
+    // Pass relevant information to Discord bot
+    discordBot.handleMessage(channel, user, message); // Custom method in discord_bot.js to handle messages
 });
 
 app.ws('/check-for-updates', (ws, req) => {
@@ -197,7 +205,7 @@ wss.on('connection', ws => {
 function notifyFileChange() {
     wss.clients.forEach(client => {
         if (client.readyState === ws.OPEN) {
-            client.send(JSON.stringify({updated: true}));
+            client.send(JSON.stringify({ updated: true }));
         }
     });
 }
