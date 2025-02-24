@@ -5,7 +5,7 @@ import expressWs from 'express-ws';
 import { job } from './keep_alive.js';
 import { OpenAIOperations } from './openai_operations.js';
 import { TwitchBot } from './twitch_bot.js';
-import { DiscordBot } from './discord_bot.js'; // Import your Discord bot
+import client from './discord_bot.js'; // Import Discord client
 
 // Start keep alive cron job
 job.start();
@@ -47,9 +47,6 @@ let lastResponseTime = 0; // Track the last response time
 console.log('Channels: ', channels);
 const bot = new TwitchBot(TWITCH_USER, TWITCH_AUTH, channels, OPENAI_API_KEY, ENABLE_TTS);
 
-// Setup Discord bot
-const discordBot = new DiscordBot(); // Initialize your Discord bot
-
 // Setup OpenAI operations
 fileContext = fs.readFileSync('./file_context.txt', 'utf8');
 const openaiOps = new OpenAIOperations(fileContext, OPENAI_API_KEY, MODEL_NAME, HISTORY_LENGTH);
@@ -77,14 +74,12 @@ bot.connect(
     }
 );
 
-// Handle Twitch bot messages
 bot.onMessage(async (channel, user, message, self) => {
     if (self) return;
 
     const currentTime = Date.now();
     const elapsedTime = (currentTime - lastResponseTime) / 1000; // Time in seconds
 
-    // Channel points handling and command execution for Twitch bot
     if (ENABLE_CHANNEL_POINTS === 'true' && user['msg-id'] === 'highlighted-message') {
         console.log(`Highlighted message: ${message}`);
         if (elapsedTime < COOLDOWN_DURATION) {
@@ -131,81 +126,15 @@ bot.onMessage(async (channel, user, message, self) => {
             }
         }
     }
-
-    // Pass relevant information to Discord bot
-    discordBot.handleMessage(channel, user, message); // Custom method in discord_bot.js to handle messages
 });
 
-app.ws('/check-for-updates', (ws, req) => {
-    ws.on('message', message => {
-        // Handle WebSocket messages (if needed)
-    });
+// Start the Express server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Express server running on port ${PORT}`);
 });
 
-const messages = [{role: 'system', content: 'You are a helpful Twitch Chatbot.'}];
-console.log('GPT_MODE:', GPT_MODE);
-console.log('History length:', HISTORY_LENGTH);
-console.log('OpenAI API Key:', OPENAI_API_KEY);
-console.log('Model Name:', MODEL_NAME);
+// Log the bot in
+client.login(process.env.DISCORD_TOKEN);
 
-app.use(express.json({extended: true, limit: '1mb'}));
-app.use('/public', express.static('public'));
-
-app.all('/', (req, res) => {
-    console.log('Received a request!');
-    res.render('pages/index');
-});
-
-if (GPT_MODE === 'CHAT') {
-    fs.readFile('./file_context.txt', 'utf8', (err, data) => {
-        if (err) throw err;
-        console.log('Reading context file and adding it as system-level message for the agent.');
-        messages[0].content = data;
-    });
-} else {
-    fs.readFile('./file_context.txt', 'utf8', (err, data) => {
-        if (err) throw err;
-        console.log('Reading context file and adding it in front of user prompts:');
-        fileContext = data;
-    });
-}
-
-app.get('/gpt/:text', async (req, res) => {
-    const text = req.params.text;
-
-    let answer = '';
-    try {
-        if (GPT_MODE === 'CHAT') {
-            answer = await openaiOps.make_openai_call(text);
-        } else if (GPT_MODE === 'PROMPT') {
-            const prompt = `${fileContext}\n\nUser: ${text}\nAgent:`;
-            answer = await openaiOps.make_openai_call_completion(prompt);
-        } else {
-            throw new Error('GPT_MODE is not set to CHAT or PROMPT. Please set it as an environment variable.');
-        }
-
-        res.send(answer);
-    } catch (error) {
-        console.error('Error generating response:', error);
-        res.status(500).send('An error occurred while generating the response.');
-    }
-});
-
-const server = app.listen(3000, () => {
-    console.log('Server running on port 3000');
-});
-
-const wss = expressWsInstance.getWss();
-wss.on('connection', ws => {
-    ws.on('message', message => {
-        // Handle client messages (if needed)
-    });
-});
-
-function notifyFileChange() {
-    wss.clients.forEach(client => {
-        if (client.readyState === ws.OPEN) {
-            client.send(JSON.stringify({ updated: true }));
-        }
-    });
-}
+export default app;
