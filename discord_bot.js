@@ -1,6 +1,4 @@
 import { 
-    Client, 
-    GatewayIntentBits, 
     ActionRowBuilder, 
     ButtonBuilder, 
     ButtonStyle, 
