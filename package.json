@@ -5,16 +5,16 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js & node discord_bot.js" // Consider using "concurrently" for better process management
+    "start": "node index.js & node discord_bot.js" 
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/canyouseetrick/gsg3-global-ai-bot"
   },
-  "author": "GSG 3ntertainment Ltd, Co.", // It's a good idea to add your name or organization here
+  "author": "GSG 3ntertainment Ltd, Co.",
   "license": "ISC",
   "bugs": {
-    "url": "" // If you have a specific URL for reporting bugs, consider adding it
+    "url": ""
   },
   "homepage": "https://github.com/canyouseetrick/gsg3-global-ai-bot#readme",
   "dependencies": {
