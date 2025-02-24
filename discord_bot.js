@@ -1,3 +1,14 @@
+import { 
+    Client, 
+    GatewayIntentBits, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    EmbedBuilder, 
+    Collection, 
+    SlashCommandBuilder,
+    PermissionsBitField
+} from 'discord.js';
 import dotenv from 'dotenv';
 import { OpenAIOperations } from './openai_operations.js';
 
