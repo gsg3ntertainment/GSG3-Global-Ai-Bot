@@ -24,7 +24,6 @@ const client = new Client({
 
 client.once('ready', () => {
     console.log(`🤖 Discord Bot is online as ${client.user.tag}`);
-    startPollCycle(); // Start the automatic poll system
 });
 
 // Initialize OpenAI operations
