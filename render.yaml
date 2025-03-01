@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: twitch-chatgpt-bot
+    name: gsg3-global-ai-bot
     runtime: node
     branch: main
     plan: free
