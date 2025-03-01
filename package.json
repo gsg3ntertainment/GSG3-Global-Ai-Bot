@@ -1,5 +1,5 @@
 {
-  "name": "twitch-chat-gpt",
+  "name": "gsg3-global-ai-bot",
   "version": "1.1.0",
   "description": "The Twitch Chat GPT is a bot that uses OpenAI's GPT-3.5 to generate messages based on the chat of a Twitch channel. It can be used to generate messages for a chatbot, or to generate, for example, a chatbot for a game.",
   "main": "index.js",
@@ -16,7 +16,7 @@
   "bugs": {
     "url": ""
   },
-  "homepage": "https://github.com/canyouseetrick/gsg3-global-ai-bot#readme",
+  "homepage": "https://github.com/gsg3ntertainment/gsg3-global-ai-bot#readme",
   "dependencies": {
     "cron": "^3.1.1",
     "ejs": "^3.1.9",
