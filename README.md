@@ -25,6 +25,9 @@ You're welcome to setup an additional .env file and store your environment varia
 
 This process can get confusing because you need to use a secondary twitch account and setup a bot application through the twitch developer portal with a Client ID connecting to your chat with your channels oAuth Token.
 
+You are also required to deploy this using a local host like Docker, or on as a webservice through a website like Render
+
+Environment variables are required instead of plainly display user specific key values, but do not post these directly into any visible files
 
 # UPDATES
 
