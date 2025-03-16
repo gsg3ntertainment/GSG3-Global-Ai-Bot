@@ -21,6 +21,14 @@ As well as an OPENAI API Key and Discord Client ID and Channel Deployment
 
 You're welcome to setup an additional .env file and store your environment variables there, otherwise they've already been established where you only need to add them and apply your individual key values for each respective variable.
 
+# Twitch Use:
+Commands: /apply (bot use) /verif (bot use) , # (bot chat prompt interaction), these need to be paired with nightbot unless you add in your desired command functions
+
+# Discord Use:
+Commands: # , /clear, /votekick
+
+Support Channel Simple Function (Acknowledge user message in support channel and tag proper role for interaction)
+
 # WARNING
 
 This process can get confusing because you need to use a secondary twitch account and setup a bot application through the twitch developer portal with a Client ID connecting to your chat with your channels oAuth Token.
