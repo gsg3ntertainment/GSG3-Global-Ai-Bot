@@ -33,6 +33,7 @@ Environment variables are required instead of plainly display user specific key 
 
 Updates are constantly in progress for the overall functionality and advancement of basic features, as well as connectivity through various platforms.
 
+![gsg3asv2](https://github.com/user-attachments/assets/449033cb-ff2d-4aac-86e7-1463b0c0d0f4)
 
 
 GSG3NTERTAINMENT LTD, CO. ~ https://www.gsg3.org
